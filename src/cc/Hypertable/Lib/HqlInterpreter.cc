@@ -350,9 +350,11 @@ cmd_load_data(Client *client, uint32_t mutator_flags,
 
   LoadDataSourcePtr lds;
 
+  cout << "Got load data command, parallel : " << state.parallel << endl;
+
   lds = LoadDataSourceFactory::create(state.input_file, state.input_file_src,
                                       state.header_file, state.header_file_src, state.key_columns,
-                                      state.timestamp_column, state.row_uniquify_chars, state.dupkeycols);
+                                      state.timestamp_column, state.row_uniquify_chars, state.dupkeycols, state.parallel);
 
   if (!into_table) {
     display_timestamps = lds->has_timestamps();
@@ -366,13 +368,14 @@ cmd_load_data(Client *client, uint32_t mutator_flags,
   uint8_t *value;
   uint32_t value_len;
   uint32_t consumed;
+  string consumed_line("");
   LoadDataEscape escaper;
   const char *escaped_buf;
   size_t escaped_len;
 
   try {
 
-    while (lds->next(0, &key, &value, &value_len, &consumed)) {
+    while (lds->next(0, &key, &value, &value_len, &consumed, consumed_line)) {
       if (value_len > 0) {
         ++cb.total_cells;
         cb.total_values_size += value_len;

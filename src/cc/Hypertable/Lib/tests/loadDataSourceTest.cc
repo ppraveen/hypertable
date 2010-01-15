@@ -67,7 +67,9 @@ int main(int argc, char **argv) {
     lds = LoadDataSourceFactory::create(dat_fn.c_str(), LOCAL_FILE, "", LOCAL_FILE,
                                         key_columns, "");
 
-    while (lds->next(0, &key, &value, &value_len, 0)) {
+    string consumed_line("");
+
+    while (lds->next(0, &key, &value, &value_len, 0, consumed_line)) {
       cerr << "row=" << (const char *)key.row
            << " column_family=" << key.column_family;
       if (key.column_qualifier_len > 0)

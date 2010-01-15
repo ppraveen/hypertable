@@ -42,13 +42,24 @@
 namespace Hypertable {
 
   class LoadDataSourceFileLocal : public LoadDataSource {
+  private:
+    uint32_t file_size;
+    uint32_t num_parallel;
+    uint32_t curr_cursor;
+    std::vector<uint32_t> init_cursors;
+    std::vector<uint32_t> cursors;
 
   public:
     LoadDataSourceFileLocal(const String &fname, const String &header_fname,
                             int row_uniquify_chars = 0,
-                            bool dupkeycol = false);
+                            bool dupkeycol = false,
+			    int parallel = 1);
 
-    ~LoadDataSourceFileLocal() { };
+    ~LoadDataSourceFileLocal();
+
+    bool next(uint32_t *type_flagp, KeySpec *keyp,
+	      uint8_t **valuep, uint32_t *value_lenp,
+	      uint32_t *consumedp, std::string &consumed_line);
 
     uint64_t incr_consumed();
 

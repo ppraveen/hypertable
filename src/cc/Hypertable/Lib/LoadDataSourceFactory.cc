@@ -34,16 +34,24 @@ LoadDataSource *
 LoadDataSourceFactory::create(const String &input_fname, const int src,
     const String &header_fname, const int header_src,
     const std::vector<String> &key_columns, const String &timestamp_column,
-    int row_uniquify_chars, bool dupkeycols) {
+			      int row_uniquify_chars, bool dupkeycols, int parallel) {
 
   LoadDataSource *lds;
+
+  if(parallel < 1)
+    HT_THROW(Error::HQL_PARSE_ERROR, "LOAD DATA - parallel option invalid ");
 
   switch (src) {
     case LOCAL_FILE:
       lds = new LoadDataSourceFileLocal(input_fname, header_fname,
-                                        row_uniquify_chars, dupkeycols);
+                                        row_uniquify_chars, dupkeycols,
+					parallel);
       break;
+
     case STDIN:
+      if(parallel != 1)
+	HT_THROW(Error::HQL_PARSE_ERROR, "LOAD DATA - parallel option not supported for reading from standard input");
+
       lds = new LoadDataSourceStdin(header_fname, row_uniquify_chars, dupkeycols);
       break;
     default:

@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/iostreams/device/file.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 
@@ -38,6 +39,12 @@
 #include "DataSource.h"
 #include "FixedRandomStringGenerator.h"
 
+extern "C" {
+#include <strings.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+}
 
 namespace Hypertable {
 
@@ -61,7 +68,7 @@ namespace Hypertable {
 
     virtual bool next(uint32_t *type_flagp, KeySpec *keyp,
                       uint8_t **valuep, uint32_t *value_lenp,
-                      uint32_t *consumedp);
+                      uint32_t *consumedp, std::string &consumed_line);
 
     virtual void init(const std::vector<String> &key_columns, const String &timestamp_column);
 

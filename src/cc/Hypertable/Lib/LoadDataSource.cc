@@ -236,16 +236,21 @@ LoadDataSource::parse_header(const String &header, const std::vector<String> &ke
  */
 bool
 LoadDataSource::next(uint32_t *type_flagp, KeySpec *keyp,
-    uint8_t **valuep, uint32_t *value_lenp, uint32_t *consumedp) {
+		     uint8_t **valuep, uint32_t *value_lenp, 
+		     uint32_t *consumedp, std::string &consumed_line) {
   String line;
   int index;
   char *base, *ptr, *colon, *endptr;
+
+  //  cout << "In next .." << endl;
 
   if (type_flagp)
     *type_flagp = FLAG_INSERT;
 
   if (consumedp)
     *consumedp = 0;
+
+  consumed_line = "";
 
   if (m_hyperformat) {
 
@@ -254,6 +259,8 @@ LoadDataSource::next(uint32_t *type_flagp, KeySpec *keyp,
 
       if (consumedp && !m_zipped)
         *consumedp += line.length() + 1;
+
+      consumed_line = line;
 
       m_line_buffer.clear();
 
@@ -393,6 +400,8 @@ LoadDataSource::next(uint32_t *type_flagp, KeySpec *keyp,
       if (consumedp && !m_zipped)
         *consumedp += line.length() + 1;
 
+      consumed_line = line;
+
       boost::trim(line);
       if (line.length() == 0)
         continue;
@@ -525,8 +534,6 @@ LoadDataSource::next(uint32_t *type_flagp, KeySpec *keyp,
 
   return false;
 }
-
-
 
 bool LoadDataSource::add_row_component(int index) {
   const char *value = m_values[m_key_comps[index].index];

@@ -233,8 +233,8 @@ namespace Hypertable {
                       max_versions(0), ttl(0), dupkeycols(false), cf(0), ag(0),
                       nanoseconds(0), delete_all_columns(false), delete_time(0),
                       if_exists(false), with_ids(false), replay(false),
-                      scanner_id(-1), row_uniquify_chars(0), escape(true),
-		      nokeys(false) {
+                      scanner_id(-1), row_uniquify_chars(0), parallel(1), 
+		      escape(true), nokeys(false) {
         memset(&tmval, 0, sizeof(tmval));
       }
       int command;
@@ -276,6 +276,7 @@ namespace Hypertable {
       String range_end_row;
       int32_t scanner_id;
       int32_t row_uniquify_chars;
+      int32_t parallel;
       bool escape;
       bool nokeys;
     };
@@ -643,6 +644,14 @@ namespace Hypertable {
       set_row_uniquify_chars(ParserState &state) : state(state) { }
       void operator()(int nchars) const {
         state.row_uniquify_chars = nchars;
+      }
+      ParserState &state;
+    };
+
+    struct set_parallel {
+      set_parallel(ParserState &state) : state(state) { }
+      void operator()(int nparallel) const {
+        state.parallel = nparallel;
       }
       ParserState &state;
     };
@@ -1306,6 +1315,7 @@ namespace Hypertable {
           Token TIMESTAMP_COLUMN = as_lower_d["timestamp_column"];
           Token HEADER_FILE  = as_lower_d["header_file"];
           Token ROW_UNIQUIFY_CHARS = as_lower_d["row_uniquify_chars"];
+          Token PARALLEL = as_lower_d["parallel"];
           Token DUP_KEY_COLS = as_lower_d["dup_key_cols"];
           Token START_ROW    = as_lower_d["start_row"];
           Token END_ROW      = as_lower_d["end_row"];
@@ -1791,6 +1801,8 @@ namespace Hypertable {
                 set_header_file(self.state)]
             | ROW_UNIQUIFY_CHARS >> EQUAL >> uint_p[
                 set_row_uniquify_chars(self.state)]
+	    | PARALLEL >> EQUAL >> uint_p[
+                set_parallel(self.state)]
             | DUP_KEY_COLS >> EQUAL >> boolean_literal[
                 set_dup_key_cols(self.state)]
             | NOESCAPE[set_noescape(self.state)]
